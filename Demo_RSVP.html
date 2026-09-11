@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Container Ucapan & RSVP Undangan Realtime</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    },
+                    colors: {
+                        brand: {
+                            brown: '#5a483e',
+                            brownHover: '#473830',
+                            bgPill: '#e8e5e3',
+                            accent: '#8b7355'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar for wish list */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 5px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #999;
+        }
+        
+        /* Music spinning animation */
+        @keyframes spin-slow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .animate-spin-slow {
+            animation: spin-slow 8s linear infinite;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen py-8 px-4 flex flex-col justify-center items-center font-sans antialiased text-gray-800">
+
+    <div class="fixed inset-0 pointer-events-none opacity-30 z-0 overflow-hidden">
+        <div class="absolute -top-20 -left-20 w-80 h-80 rounded-full bg-amber-100 blur-3xl"></div>
+        <div class="absolute -bottom-20 -right-20 w-80 h-80 rounded-full bg-stone-200 blur-3xl"></div>
+    </div>
+
+    <main class="w-full max-w-md relative z-10 mx-auto">
+        
+        <!-- Header Text -->
+        <div class="text-center mb-6">
+            <p class="text-gray-700 font-medium text-base sm:text-lg tracking-wide">
+                Berikan doa dan ucapan terbaik untuk kami.
+            </p>
+        </div>
+
+        <!-- Card RSVP Box -->
+        <div class="bg-white/95 backdrop-blur-sm rounded-3xl p-6 sm:p-7 shadow-xl border border-gray-200/80 mb-6">
+            <form id="rsvpForm" class="space-y-4">
+                
+                <!-- Input Nama -->
+                <div>
+                    <input 
+                        type="text" 
+                        id="inputNama" 
+                        required 
+                        placeholder="Nama" 
+                        class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-stone-500 focus:ring-2 focus:ring-stone-200 transition duration-200 outline-none text-gray-700 placeholder-gray-400 text-sm sm:text-base bg-white"
+                    >
+                </div>
+
+                <!-- Input Ucapan -->
+                <div>
+                    <textarea 
+                        id="inputUcapan" 
+                        required 
+                        rows="3" 
+                        placeholder="Ucapan" 
+                        class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-stone-500 focus:ring-2 focus:ring-stone-200 transition duration-200 outline-none text-gray-700 placeholder-gray-400 text-sm sm:text-base bg-white resize-none"
+                    ></textarea>
+                </div>
+
+                <div class="relative my-6 flex items-center justify-center">
+                    <div class="border-t border-gray-300 w-full"></div>
+                    <span class="bg-white px-3 text-xs sm:text-sm font-medium text-gray-700 whitespace-nowrap relative z-10">
+                        Konfirmasi Kehadiran
+                    </span>
+                    <div class="border-t border-gray-300 w-full"></div>
+                </div>
+
+                <!-- Toggle Status Kehadiran Buttons -->
+                <div class="grid grid-cols-2 gap-3">
+                    <button 
+                        type="button" 
+                        id="btnHadir" 
+                        class="py-2.5 px-4 rounded-full text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 border border-gray-200 bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    >
+                        <i class="fa-solid fa-circle-check text-green-600"></i>
+                        <span>Hadir</span>
+                    </button>
+
+                    <button 
+                        type="button" 
+                        id="btnTidakHadir" 
+                        class="py-2.5 px-4 rounded-full text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 border border-gray-200 bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    >
+                        <i class="fa-solid fa-circle-xmark text-red-500"></i>
+                        <span>Tidak Hadir</span>
+                    </button>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="pt-2">
+                    <button 
+                        type="submit" 
+                        id="btnSubmit"
+                        class="w-full py-3.5 px-6 rounded-2xl bg-[#5a483e] hover:bg-[#473830] active:scale-[0.99] text-white font-medium text-base shadow-md hover:shadow-lg transition-all duration-200 tracking-wide flex items-center justify-center gap-2 disabled:opacity-50"
+                    >
+                        <span id="btnSubmitText">Kirim</span>
+                        <i id="btnSubmitSpinner" class="fa-solid fa-spinner animate-spin hidden"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="flex items-center justify-between px-2 mb-3 text-xs sm:text-sm text-gray-600 font-medium">
+            <span id="totalWishesCount">0 Ucapan</span>
+            <div class="flex items-center gap-3">
+                <span class="flex items-center gap-1 text-green-700"><i class="fa-solid fa-circle text-[8px]"></i> <span id="countHadir">0</span> Hadir</span>
+                <span class="flex items-center gap-1 text-red-600"><i class="fa-solid fa-circle text-[8px]"></i> <span id="countTidakHadir">0</span> Absen</span>
+            </div>
+        </div>
+
+        <!-- Ucapan Cards Feed Container -->
+        <div id="wishesListContainer" class="space-y-3.5 max-h-[420px] overflow-y-auto pr-1 custom-scrollbar">
+            <!-- Dynamic comments will be rendered here by JavaScript -->
+            <div class="bg-white p-6 rounded-2xl text-center text-gray-400 border border-gray-100 shadow-sm">
+                <i class="fa-solid fa-spinner animate-spin text-2xl mb-2 text-stone-400"></i>
+                <p class="text-xs sm:text-sm">Memuat ucapan...</p>
+            </div>
+        </div>
+
+    </main>
+
+    <div class="fixed bottom-5 right-5 z-50">
+        <button 
+            id="audioToggleBtn" 
+            class="w-12 h-12 rounded-full bg-slate-900 text-teal-400 flex items-center justify-center shadow-2xl hover:scale-105 active:scale-95 transition-all duration-300 border border-slate-700/50"
+            title="Putar / Hentikan Musik"
+        >
+            <i id="musicIcon" class="fa-solid fa-music text-lg"></i>
+        </button>
+    </div>
+
+    <!-- Notification Toast Modal -->
+    <div id="toastNotification" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 transform -translate-y-16 opacity-0 transition-all duration-300 pointer-events-none">
+        <div class="bg-gray-900 text-white px-5 py-2.5 rounded-full shadow-2xl text-sm flex items-center gap-2.5 border border-gray-700">
+            <i class="fa-solid fa-circle-check text-emerald-400 text-base"></i>
+            <span id="toastMessage">Ucapan berhasil dikirim!</span>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Application Config & Variables
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'wedding-rsvp-default';
+        
+        // GANTI DENGAN FIREBASE CONFIG MILIK ANDA DARI FIREBASE CONSOLE:
+        const firebaseConfig = typeof __firebase_config !== 'undefined' 
+            ? JSON.parse(__firebase_config) 
+            : {
+                apiKey: "AIzaSyCCChID3ChtGQSPSKrjDS1T_4cLavvRPzs",
+				authDomain: "fir-rsvp-29a26.firebaseapp.com",
+				projectId: "fir-rsvp-29a26",
+				storageBucket: "fir-rsvp-29a26.firebasestorage.app",
+				messagingSenderId: "250591969844",
+				appId: "1:250591969844:web:1ac8da4374f709e3c98061"
+            };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let selectedKehadiran = 'Hadir';
+        let currentUser = null;
+        let isAudioPlaying = false;
+        let audioContext = null;
+
+        const avatarBgColors = [
+            'bg-indigo-300 text-indigo-900',
+            'bg-sky-200 text-sky-900',
+            'bg-blue-300 text-blue-900',
+            'bg-purple-200 text-purple-900',
+            'bg-emerald-200 text-emerald-900',
+            'bg-amber-200 text-amber-900',
+            'bg-rose-200 text-rose-900'
+        ];
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            // Setup attendance toggle buttons
+            document.getElementById('btnHadir').addEventListener('click', () => setKehadiran('Hadir'));
+            document.getElementById('btnTidakHadir').addEventListener('click', () => setKehadiran('Tidak Hadir'));
+            document.getElementById('rsvpForm').addEventListener('submit', handleFormSubmit);
+            document.getElementById('audioToggleBtn').addEventListener('click', toggleAudio);
+
+            setKehadiran('Hadir');
+
+            // Authenticate user before querying cloud storage
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.warn("Cloud Auth Notice:", error);
+            }
+        });
+
+        // Track Auth state and listen to Realtime database updates
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            if (user) {
+                listenToCloudWishes();
+            } else {
+                fallbackToLocalStorage();
+            }
+        });
+
+        function listenToCloudWishes() {
+            if (!currentUser) return;
+
+            // Strict Firestore Path Rule for public data
+            const wishesCollection = collection(db, 'artifacts', appId, 'public', 'data', 'wishes');
+
+            // Listen to real-time updates across all connected devices
+            onSnapshot(wishesCollection, (snapshot) => {
+                const cloudWishes = [];
+                snapshot.forEach((doc) => {
+                    cloudWishes.push({ id: doc.id, ...doc.data() });
+                });
+
+                // Sort in memory by time (descending)
+                cloudWishes.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+                renderWishes(cloudWishes);
+            }, (error) => {
+                console.error("Firestore Listener error:", error);
+                fallbackToLocalStorage();
+            });
+        }
+
+        function fallbackToLocalStorage() {
+            const localData = JSON.parse(localStorage.getItem('wedding_wishes') || '[]');
+            renderWishes(localData);
+        }
+
+        async function handleFormSubmit(event) {
+            event.preventDefault();
+
+            const namaInput = document.getElementById('inputNama');
+            const ucapanInput = document.getElementById('inputUcapan');
+            const btnSubmit = document.getElementById('btnSubmit');
+            const btnSubmitText = document.getElementById('btnSubmitText');
+            const btnSubmitSpinner = document.getElementById('btnSubmitSpinner');
+
+            const nama = namaInput.value.trim();
+            const ucapan = ucapanInput.value.trim();
+
+            if (!nama || !ucapan) return;
+
+            // Disable submit button during processing
+            btnSubmit.disabled = true;
+            btnSubmitText.textContent = "Sending...";
+            btnSubmitSpinner.classList.remove('hidden');
+
+            const newWish = {
+                nama: nama,
+                ucapan: ucapan,
+                kehadiran: selectedKehadiran,
+                initials: getInitials(nama),
+                bgColor: getRandomBgColor(nama),
+                createdAt: Date.now()
+            };
+
+            let isSuccess = false;
+
+            if (currentUser) {
+                try {
+                    const wishesCollection = collection(db, 'artifacts', appId, 'public', 'data', 'wishes');
+                    await addDoc(wishesCollection, newWish);
+                    isSuccess = true;
+                } catch (err) {
+                    console.error("Cloud Save failed, saving locally:", err);
+                }
+            }
+
+            if (!isSuccess) {
+                // Fallback local save if offline
+                let localWishes = JSON.parse(localStorage.getItem('wedding_wishes') || '[]');
+                localWishes.unshift({ ...newWish, id: Date.now().toString() });
+                localStorage.setItem('wedding_wishes', JSON.stringify(localWishes));
+                renderWishes(localWishes);
+            }
+
+            // Reset form
+            namaInput.value = '';
+            ucapanInput.value = '';
+            setKehadiran('Hadir');
+
+            btnSubmit.disabled = false;
+            btnSubmitText.textContent = "Kirim";
+            btnSubmitSpinner.classList.add('hidden');
+
+            showToast('Terima kasih atas ucapan dan doanya!');
+        }
+
+        function renderWishes(wishes) {
+            const container = document.getElementById('wishesListContainer');
+            const totalWishesCount = document.getElementById('totalWishesCount');
+            const countHadir = document.getElementById('countHadir');
+            const countTidakHadir = document.getElementById('countTidakHadir');
+
+            totalWishesCount.textContent = `${wishes.length} Ucapan`;
+            const hadirTotal = wishes.filter(w => w.kehadiran === 'Hadir').length;
+            const tidakHadirTotal = wishes.filter(w => w.kehadiran === 'Tidak Hadir').length;
+
+            countHadir.textContent = hadirTotal;
+            countTidakHadir.textContent = tidakHadirTotal;
+
+            if (wishes.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white p-6 rounded-2xl text-center text-gray-400 border border-gray-100 shadow-sm">
+                        <i class="fa-regular fa-comment-dots text-3xl mb-2 text-stone-300"></i>
+                        <p class="text-sm">Belum ada ucapan. Jadilah yang pertama memberikan doa!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let htmlContent = '';
+            wishes.forEach(item => {
+                const isHadir = item.kehadiran === 'Hadir';
+                const badge = isHadir 
+                    ? '<span class="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100"><i class="fa-solid fa-check text-[9px]"></i> Hadir</span>' 
+                    : '<span class="inline-flex items-center gap-1 text-[11px] font-medium text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-100"><i class="fa-solid fa-xmark text-[9px]"></i> Absen</span>';
+
+                htmlContent += `
+                    <div class="flex items-start gap-3 transition-all duration-300">
+                        <div class="w-10 h-10 rounded-full ${item.bgColor || 'bg-indigo-300 text-indigo-900'} flex items-center justify-center font-bold text-xs sm:text-sm shrink-0 shadow-sm mt-1">
+                            ${escapeHtml(item.initials || '??')}
+                        </div>
+                        <div class="flex-1 bg-white rounded-2xl p-4 shadow-sm border border-gray-100/90 hover:shadow-md transition-shadow">
+                            <div class="flex items-center justify-between gap-2 mb-1.5">
+                                <h4 class="font-bold text-gray-900 text-sm sm:text-base leading-snug">
+                                    ${escapeHtml(item.nama)}
+                                </h4>
+                                ${badge}
+                            </div>
+                            <p class="text-gray-700 text-xs sm:text-sm leading-relaxed whitespace-pre-line">
+                                ${escapeHtml(item.ucapan)}
+                            </p>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = htmlContent;
+        }
+
+        function setKehadiran(status) {
+            selectedKehadiran = status;
+            const btnHadir = document.getElementById('btnHadir');
+            const btnTidakHadir = document.getElementById('btnTidakHadir');
+
+            if (status === 'Hadir') {
+                btnHadir.className = 'py-2.5 px-4 rounded-full text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 border border-emerald-500 bg-emerald-50 text-emerald-800 shadow-sm ring-2 ring-emerald-200';
+                btnTidakHadir.className = 'py-2.5 px-4 rounded-full text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 border border-gray-200 bg-gray-100 text-gray-500 hover:bg-gray-200';
+            } else {
+                btnTidakHadir.className = 'py-2.5 px-4 rounded-full text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 border border-rose-500 bg-rose-50 text-rose-800 shadow-sm ring-2 ring-rose-200';
+                btnHadir.className = 'py-2.5 px-4 rounded-full text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 border border-gray-200 bg-gray-100 text-gray-500 hover:bg-gray-200';
+            }
+        }
+
+        function getInitials(name) {
+            if (!name) return '??';
+            const clean = name.trim();
+            const words = clean.split(' ');
+            if (words.length >= 2) return (words[0][0] + words[1][0]).toUpperCase();
+            if (clean.length >= 2) return clean.substring(0, 2).toUpperCase();
+            return (clean[0] + 'A').toUpperCase();
+        }
+
+        function getRandomBgColor(name) {
+            let hash = 0;
+            for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+            return avatarBgColors[Math.abs(hash) % avatarBgColors.length];
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toastNotification');
+            const toastMsg = document.getElementById('toastMessage');
+            toastMsg.textContent = msg;
+
+            toast.classList.remove('opacity-0', '-translate-y-16', 'pointer-events-none');
+            toast.classList.add('opacity-100', 'translate-y-0');
+
+            setTimeout(() => {
+                toast.classList.remove('opacity-100', 'translate-y-0');
+                toast.classList.add('opacity-0', '-translate-y-16', 'pointer-events-none');
+            }, 3000);
+        }
+
+        function toggleAudio() {
+            const icon = document.getElementById('musicIcon');
+            const btn = document.getElementById('audioToggleBtn');
+
+            if (!isAudioPlaying) {
+                try {
+                    if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    if (audioContext.state === 'suspended') audioContext.resume();
+
+                    const notes = [261.63, 329.63, 392.00, 523.25, 440.00, 349.23];
+                    let noteIndex = 0;
+
+                    const playNextNote = () => {
+                        if (!isAudioPlaying) return;
+                        const osc = audioContext.createOscillator();
+                        const gain = audioContext.createGain();
+                        
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(notes[noteIndex], audioContext.currentTime);
+                        
+                        gain.gain.setValueAtTime(0.05, audioContext.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 1.2);
+
+                        osc.connect(gain);
+                        gain.connect(audioContext.destination);
+
+                        osc.start();
+                        osc.stop(audioContext.currentTime + 1.2);
+
+                        noteIndex = (noteIndex + 1) % notes.length;
+                        if (isAudioPlaying) setTimeout(playNextNote, 600);
+                    };
+
+                    isAudioPlaying = true;
+                    playNextNote();
+
+                    icon.classList.add('animate-spin-slow');
+                    btn.classList.add('ring-4', 'ring-teal-400/30');
+                    showToast('Musik latar diputar ♪');
+                } catch (e) {
+                    console.log('Audio error:', e);
+                }
+            } else {
+                isAudioPlaying = false;
+                icon.classList.remove('animate-spin-slow');
+                btn.classList.remove('ring-4', 'ring-teal-400/30');
+                showToast('Musik dihentikan');
+            }
+        }
+    </script>
+</body>
+</html>
